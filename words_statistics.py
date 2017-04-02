@@ -65,8 +65,8 @@ def _run_reading_and_calc(arg):
     except:
         msg = 'Check file format in  {}'.format(arg)
         raise  IOError(msg)
-
-    _save_result(_calc_stats(_get_words_from_file(in_put)), '')
+    _save_result(_calc_stats(_get_words_from_file(in_put)),\
+        './' + in_put.name.strip('.txt').strip('.').strip('/') + '.csv')
 
 
 def _run_unittests():
@@ -126,11 +126,10 @@ def _read_args_and_run():
     help_msg = help_msg + '\t' + '--get_stats path_to_file - for read from data from.\n'
 
     if (n_arg > 1) & (n_arg <= 3):
-
         if (n_arg == 2) & ('--run_self_test' in arg[1]):
             _run_unittests()
 
-        elif (n_arg == 3) & ('--get_data' in arg[1]):
+        elif (n_arg == 3) & ('--get_stats' in arg[1]):
             _run_reading_and_calc(arg[2])
 
         else:
