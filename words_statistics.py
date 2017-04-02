@@ -115,7 +115,7 @@ def _read_args_and_run():
     if (n_arg > 1) & (n_arg <= 3):
 
         if (n_arg == 2) & ('--run_self_test' in arg[1]):
-            _run_reading_and_calc(arg)
+            _run_reading_and_calc(arg[1])
 
         elif (n_arg == 3) & ('--get_data' in arg[1]):
             _get_words_from_file(arg[2])
