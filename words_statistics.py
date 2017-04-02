@@ -1,10 +1,46 @@
 #!/usr/bin/env python
 """
+    Words statistics
 """
 import os
 import sys
 import pandas as pd
-def _run_reading(arg):
+
+
+def _get_words_from_file(in_put):
+    """
+    Get word from file
+    in_put: file object
+    """
+    raw_words = []
+    for line in in_put:
+        raw_words = raw_words + line.split(' ')
+
+    banned = ['?', '!', ':', ',', '.', '"']
+    stripper = lambda word, sign: word.strip(sign) if sign in word else word
+    words = []
+    for word in raw_words:
+        for sign in banned:
+            word = stripper(word, sign)
+        if word not in ['-', ':']:
+            words.append(word)
+
+    return words
+
+def _calc_stats(words):
+    """
+    words: words list
+    """
+    frame = pd.DataFrame(words, columns=['word'])
+    total = frame.count().word
+    out = []
+    for unique in frame.word.unique():
+        out.append((unique, (frame[frame.word == unique].count().values[0])/total))
+
+    return out
+
+
+def _run_reading_and_calc(arg):
     """
     Read file and calc stats
     arg: path to file
@@ -12,63 +48,59 @@ def _run_reading(arg):
     if os.path.exists(arg) is False:
         msg = 'Check path {}'.format(arg)
         raise FileNotFoundError(msg)
+
     in_put = open(arg, 'rt')
+
     try:
-        tmp = in_put.readline()
+        in_put.readline()
         in_put.seek(0)
     except:
         msg = 'Check file format in  {}'.format(arg)
         raise  IOError(msg)
 
-    raw_words = []
+    result = pd.DataFrame(_calc_stats(_get_words_from_file(in_put)),\
+        columns=['word', 'freq'])
 
-    banned = ['?', '!', ':', ',', '.', '"']
-    stripper = lambda word, sign: word.strip(sign) if sign in word else word
+    print(result.word.sort)
 
-    for line in in_put:
-        raw_words = raw_words + line.split(' ')
-    
-    raw_words = []
-    for word in words:
-        for sign in banned:
-            words.append(stripper(word, sign))
-
-    
 
 def _run_unittests():
     """
     Run unittest
     """
-    from io import BytesIO
+    from io import StringIO
     import unittest
 
     class TestCounter(unittest.TestCase):
         """
         Test for counter
         """
-            def setUp(self):
-                """
-                setup test data
-                """
-                self.file = io.StringIO("""На разрисованных райскими цветами
-тарелках с черною широкой каймой лежала тонкими ломтиками нарезанная семга,
-маринованные угри. На тяжелой доске кусок сыру в слезах, и в серебряной
-кадушке, обложенной снегом, - икра. Меж тарелками несколько тоненьких
-рюмочек и три хрустальных графинчика с разноцветными водками. Все эти
-предметы помещались на маленьком мраморном столике, уютно присоседившемся
-у громадного резного дуба буфета, изрыгавшего пучки стеклянного и серебряного
-света. Посредине комнаты - тяжелый, как гробница, стол, накрытый белой
-скатертью, а на нем два прибора, салфетки, свернутые в виде папских тиар,
-и три темных бутылки.
-3ина внесла серебряное крытое блюдо, в котором что-то ворчало. 3апах от блюда
-шел такой, что рот пса немедленно заполнился жидкой слюной. "Сады
-Семирамиды!", - подумал он и застучал, как палкой, по паркету хвостом.""")
+        def setUp(self):
+            """
+            setup test data
+            """
+            self._short_text = 'aaaa, bbbb'
+            self._short_file = StringIO(self._short_text)
+            self._words = ['aaaa', 'bbbb']
 
-            def test_read_data_from_file(self):
-                """
-                Test read data
-                """
-                pass
+        def test_a(self):
+            """
+            Test read data
+            """
+            self.assertListEqual(_get_words_from_file(self._short_file), self._words)
+
+        def test_b(self):
+            """
+            Test calc stats
+            """
+            result = _calc_stats(self._words)
+            for res in result:
+                self.assertEqual(res[1], 0.5)
+
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(TestCounter))
+    unittest.TextTestRunner().run(suite)
+
 def _read_args_and_run():
     """
     Set execute mode
@@ -78,16 +110,15 @@ def _read_args_and_run():
 
     help_msg = 'Input next arguments:\n'
     help_msg = help_msg + '\t' + '--run_self_test - for run unittests;\n'
-    help_msg = help_msg + '\t' + '--get_stats path_to_file - for read from
-data from.\n'
+    help_msg = help_msg + '\t' + '--get_stats path_to_file - for read from data from.\n'
 
     if (n_arg > 1) & (n_arg <= 3):
 
         if (n_arg == 2) & ('--run_self_test' in arg[1]):
-            _run_unittests()
+            _run_reading_and_calc(arg)
 
         elif (n_arg == 3) & ('--get_data' in arg[1]):
-            _get_mode(arg[2])
+            _get_words_from_file(arg[2])
 
         else:
             print(help_msg)
