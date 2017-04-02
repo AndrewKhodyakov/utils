@@ -66,7 +66,7 @@ def _run_reading_and_calc(arg):
         msg = 'Check file format in  {}'.format(arg)
         raise  IOError(msg)
     _save_result(_calc_stats(_get_words_from_file(in_put)),\
-        './' + in_put.name.strip('.txt').strip('.').strip('/') + '.csv')
+        './' + in_put.name.strip('txt').strip('.').strip('/') + '.csv')
 
 
 def _run_unittests():
